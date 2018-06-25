@@ -1,3 +1,6 @@
 .idea
 libraries/*.*
 target
+*.class
+*.jar
+*.ipr
