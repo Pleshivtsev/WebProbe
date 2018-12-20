@@ -6,7 +6,7 @@
 
     <groupId>ru.svp.testing</groupId>
     <artifactId>webprobe</artifactId>
-    <version>0.2.2</version>
+    <version>0.3-SNAPSHOT</version>
 
     <properties>
         <!-- github server corresponds to entry in ~/.m2/settings.xml -->

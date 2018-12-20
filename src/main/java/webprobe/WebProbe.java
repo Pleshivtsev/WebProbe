@@ -1,13 +1,14 @@
 package webprobe;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Capabilities;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import webprobe.enums.BrowserType;
 import webprobe.enums.RemoteBrowserType;
+import webprobe.pages.PageElement;
 import webprobe.seleniumDriver.GridWebDriver;
 import webprobe.seleniumDriver.LocalWebDriver;
+import webprobe.utils.Assert;
 
 import java.util.concurrent.TimeUnit;
 
@@ -113,5 +114,49 @@ public class WebProbe {
     public void capture()   {  busy = true;     }
     public void release()   {  busy = false;    }
     public Boolean isBusy() {  return busy;    }
+
+//**************************** Заполнение элемента ************************************************************
+    public void fillWebElement(PageElement pageElement){
+        pageElement.fillWebElement(driver);
+    }
+//**************************** Ожидания  элементов ************************************************************
+    public void waitForElementIsVisible(PageElement pageElement, Integer timeout){
+        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(pageElement.getLocator()));
+    }
+
+    public void waitForElementIsNotVisible(PageElement pageElement, Integer timeout){
+        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(pageElement.getLocator()));
+    }
+
+    public WebElement waitForElementToBeClickable(PageElement pageElement, Integer timeout){
+        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        return wait.until(ExpectedConditions.elementToBeClickable(pageElement.getLocator()));
+    }
+
+    public void waitForTextOfElementChanged(PageElement pageElement, String oldText, Integer timeout){
+        fillWebElement(pageElement);
+        WebDriverWait wait = new WebDriverWait(driver,timeout);
+        wait.until((RavenDarkholme) -> !(pageElement.getActualText().equals(oldText)));
+    }
+
+    public void waitForStalenessOfElement(PageElement pageElement, Integer timeout){
+        WebElement webElement = pageElement.fillWebElement(driver);
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        wait.until(ExpectedConditions.stalenessOf(webElement));
+    }
+
+
+
+//**************************** Другие методы элемента   ******************************************************
+    public void removeReadOnly(PageElement pageElement){
+        WebElement webElement = pageElement.fillWebElement(driver);
+        ((JavascriptExecutor) driver).executeScript
+                ("arguments[0].removeAttribute('readonly','readonly')",webElement);
+    }
 
 }// end of class WebProbe
