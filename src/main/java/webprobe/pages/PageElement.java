@@ -35,9 +35,11 @@ public class PageElement {
 
     public PageElement(By locator) {
         this.locator = locator;
+        doVerify = true;
     }
 
     public PageElement(WebElement webElement){
+        doVerify = true;
         this.webElement = webElement;
     }
 
@@ -366,5 +368,11 @@ public class PageElement {
         return verifyResult;
     }//public void verify()
 
+    public void assertElement(){
+        verify();
+        if (!verifyResult){
+            Assert.pageAssert(resultMessage);
+        }
+    }
 
 }

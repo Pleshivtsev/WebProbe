@@ -1,6 +1,7 @@
 package webprobe;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import webprobe.enums.BrowserType;
@@ -10,6 +11,7 @@ import webprobe.seleniumDriver.GridWebDriver;
 import webprobe.seleniumDriver.LocalWebDriver;
 import webprobe.utils.Assert;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,6 +27,7 @@ public class WebProbe {
 //**************************** Конструкторы   *******************************************************************************
     public WebProbe(WebDriver driver){
         this.driver = driver;
+        setDefaults();
     }
 
     public WebProbe(BrowserType browserType){
@@ -57,6 +60,7 @@ public class WebProbe {
         this.driver.manage().timeouts().implicitlyWait(implWaitDefault, TimeUnit.SECONDS);
 
         currentThread = Thread.currentThread().getId();
+        originalWindow = driver.getWindowHandle();
     }
 
 //**************************** Геттеры   *******************************************************************************
@@ -95,6 +99,10 @@ public class WebProbe {
         return webElement;
     }
 
+    public String getText(By locator){
+        return getDriver().findElement(locator).getText();
+    }
+
 
 //**************************** Задержки Selenium ************************************************************
     public void setDefaultImplicitlyWait(long timeout){
@@ -109,6 +117,77 @@ public class WebProbe {
         this.driver.manage().timeouts().implicitlyWait(implWaitDefault, TimeUnit.SECONDS);
     }
 
+    public void sleep(Integer seconds){
+        try {
+            Thread.sleep(seconds * 1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+//**************************** Работа с окнами и фреймами **************************************************************
+
+    public void maximize(){
+        driver.manage().window().maximize();
+    }
+
+    public void switchToFrameByName(String frameName){
+        driver.switchTo().frame(frameName);
+    }
+
+    public void switchToFrameBy(By locator){
+        WebElement webElement = driver.findElement(locator);
+        driver.switchTo().frame(webElement);
+    }
+
+    public void waitForFrameAndSwitchToIt(By locator, Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        wait.until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(locator));
+    }
+
+    public void switchToFrmameByIndex(int index){
+        driver.switchTo().frame(index);
+    }
+
+    public void switchToRootFrame(){
+        driver.switchTo().defaultContent();
+    }
+
+    //Ожидание появление нового окна
+    private ExpectedCondition<String> anyWindowOtherThan(Set<String> oldWindows) {
+        return driver -> {
+            Set<String> handles = driver.getWindowHandles();
+            handles.removeAll(oldWindows);
+            return handles.size() > 0 ? handles.iterator().next() : null;
+        };
+    }
+
+    //Ожидание появление нового окна и затем переключение в него
+    public void waitForNewWindowAndSwitch(Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        Set<String> existingWindows = driver.getWindowHandles(); // запоминаем идентификаторы уже открытых окон
+        String newWindow = wait.until(anyWindowOtherThan(existingWindows)); // ждем появления нового окна, с новым идентификатором
+        driver.switchTo().window(newWindow); // переключаемся в новое окно
+    }
+
+    //Wait for new window based on earlier windows list info
+    public void waitForNewWindowAndSwitch(Set<String> existingWindows ,Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        String newWindow = wait.until(anyWindowOtherThan(existingWindows)); // ждем появления нового окна, с новым идентификатором
+        driver.switchTo().window(newWindow); // переключаемся в новое окно
+    }
+
+    //Переключение в оригинальное окно()
+    public void switchToOriginalWindow(){
+        driver.switchTo().window(originalWindow); // и возвращаемся в исходное окно
+    }
+
+    public void closeAndSwitchToOriginalWindow(){
+        driver.close();
+        switchToOriginalWindow();
+    }
+
+
 //**************************** Функции ************************************************************
 
     public void capture()   {  busy = true;     }
@@ -120,22 +199,20 @@ public class WebProbe {
         pageElement.fillWebElement(driver);
     }
 //**************************** Ожидания  элементов ************************************************************
-    public void waitForElementIsVisible(PageElement pageElement, Integer timeout){
-        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+
+    public void waitForElementToBeVisibleBy(By locator, Integer timeout){
         WebDriverWait wait = new WebDriverWait(driver, timeout);
-        wait.until(ExpectedConditions.visibilityOfElementLocated(pageElement.getLocator()));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
     }
 
-    public void waitForElementIsNotVisible(PageElement pageElement, Integer timeout){
-        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+    public void waitForElementToBeNotVisibleBy(By locator, Integer timeout){
         WebDriverWait wait = new WebDriverWait(driver, timeout);
-        wait.until(ExpectedConditions.invisibilityOfElementLocated(pageElement.getLocator()));
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(locator));
     }
 
-    public WebElement waitForElementToBeClickable(PageElement pageElement, Integer timeout){
-        Assert.pageAssertTrue(pageElement.getLocator() != null, "Locator of this page element is null");
+    public WebElement waitForElementToBeClickableBy(By locator, Integer timeout) {
         WebDriverWait wait = new WebDriverWait(driver, timeout);
-        return wait.until(ExpectedConditions.elementToBeClickable(pageElement.getLocator()));
+        return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
     public void waitForTextOfElementChanged(PageElement pageElement, String oldText, Integer timeout){
@@ -144,10 +221,14 @@ public class WebProbe {
         wait.until((RavenDarkholme) -> !(pageElement.getActualText().equals(oldText)));
     }
 
-    public void waitForStalenessOfElement(PageElement pageElement, Integer timeout){
-        WebElement webElement = pageElement.fillWebElement(driver);
+    public void waitForStalenessOfElement(WebElement webElement, Integer timeout){
         WebDriverWait wait = new WebDriverWait(driver, timeout);
         wait.until(ExpectedConditions.stalenessOf(webElement));
+    }
+
+    public void waitForNotExistingOfElementBy(By locator, Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        wait.until(ExpectedConditions.numberOfElementsToBe(locator, 0));
     }
 
 

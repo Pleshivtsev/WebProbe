@@ -12,8 +12,33 @@ public class PageBlock {
 
     protected List<PageElement> elements;
     private boolean doVerify;
+    private String name;
+    private String resultMessage;
+    private Boolean verifyResult;
 
+
+//**************************** Геттеры   ****************************************************************************
+    public String getName() {
+        return name;
+    }
+
+    public Boolean getVerifyResult() {
+        return verifyResult;
+    }
+
+    public String getResultMessage() {
+        return resultMessage;
+    }
+
+    //**************************** Cеттеры   *******************************************************************************
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+//**************************** Конструкторы   *******************************************************************************
     public PageBlock(){
+        name = "";
         elements = new ArrayList<>();
         doVerify = true;
     }
@@ -28,9 +53,14 @@ public class PageBlock {
         renew(driver, locator);
     }
 
-
+//**************************** Методы   *******************************************************************************
     public void addWebElement(WebElement webElement){
         PageElement pageElement = new PageElement(webElement);
+        elements.add(pageElement);
+    }
+
+    public void addWebElementBy(By locator){
+        PageElement pageElement = new PageElement(locator);
         elements.add(pageElement);
     }
 
@@ -52,6 +82,11 @@ public class PageBlock {
         webElements.forEach(webElement -> addWebElement(webElement));
     }
 
+    public void fillWebElements(WebDriver driver){
+        elements.forEach(element -> element.fillWebElement(driver));
+    }
+
+
     public void enableVerify(){
         doVerify = true;
     }
@@ -62,7 +97,16 @@ public class PageBlock {
 
     public void verify(){
         if (doVerify && elements.size() > 0){
-            elements.forEach(element -> element.verify());
+            resultMessage = name + " check results: " + "\r\n";
+            verifyResult = true;
+
+            for(PageElement element: elements){
+                element.verify();
+                if (element.getVerifyResult() == false){
+                    verifyResult = false;
+                    resultMessage = resultMessage + element.getResultMessage() + "\r\n";
+                }
+            }
         }
     }
 
