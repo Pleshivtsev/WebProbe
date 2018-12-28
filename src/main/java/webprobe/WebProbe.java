@@ -11,6 +11,7 @@ import webprobe.seleniumDriver.GridWebDriver;
 import webprobe.seleniumDriver.LocalWebDriver;
 import webprobe.utils.Assert;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -98,6 +99,25 @@ public class WebProbe {
         webElement.click();
         return webElement;
     }
+
+
+
+    public void clickElementContainsText(By parentLocator, String elementTextSubString){
+        Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
+
+        List<WebElement> elements = driver.findElements(parentLocator);
+        Assert.shouldBeTrue(elements.size()>0, "*** Zero elements was found!");
+
+        for (WebElement element: elements){
+            if (element.getText().contains(elementTextSubString)){
+                element.click();
+                return;
+            }
+        }
+
+        Assert.pageAssert("*** There is no element containing text: " + elementTextSubString);
+    }
+
 
     public String getText(By locator){
         return getDriver().findElement(locator).getText();

@@ -21,4 +21,9 @@ public class Assert {
         if (!condition_true)  pageAssert(message);
     }
 
+    public static void shouldBeTrue (boolean condition_true, String message){
+        if (!condition_true)  pageAssert(message);
+    }
+
+
 }

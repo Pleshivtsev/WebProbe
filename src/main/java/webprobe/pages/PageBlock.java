@@ -15,6 +15,7 @@ public class PageBlock {
     private String name;
     private String resultMessage;
     private Boolean verifyResult;
+    private By locator;
 
 
 //**************************** Геттеры   ****************************************************************************
@@ -50,6 +51,7 @@ public class PageBlock {
             return;
         }
 
+        this.locator = locator;
         renew(driver, locator);
     }
 
@@ -110,6 +112,16 @@ public class PageBlock {
         }
     }
 
+//**************************** Клики   *******************************************************************************
+    private List<WebElement> getWebElements(WebDriver driver){
+        Assert.shouldBeTrue(locator != null, "*** Page block locator is null!");
+
+        List<WebElement> elements = driver.findElements(locator);
+        Assert.shouldBeTrue(elements.size()>0, "*** Zero elements was found!");
+
+        return elements;
+    }
+
     public PageElement clickNthElement(Integer index){
         if(elements.size()<1){
             Assert.pageAssert("Page block is empty");
@@ -120,4 +132,35 @@ public class PageBlock {
         element.click();
         return element;
     }
+
+    public void clickElementByText(WebDriver driver,String elementText){
+        Assert.shouldBeTrue((elementText != null) && (elementText.trim().length()>0), "*** Element text should not be empty");
+
+        List<WebElement> elements = getWebElements(driver);
+
+        for(WebElement element: elements){
+            if (element.getText().equals(elementText)){
+                element.click();
+                return;
+            }
+        }
+
+        Assert.pageAssert("*** There is no element with text: " + elementText);
+    }
+
+    public void clickElementContainsText(WebDriver driver, String elementTextSubString){
+        Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
+
+        List<WebElement> elements = getWebElements(driver);
+
+        for (WebElement element: elements){
+            if (element.getText().contains(elementTextSubString)){
+                element.click();
+                return;
+            }
+        }
+
+        Assert.pageAssert("*** There is no element containing text: " + elementTextSubString);
+    }
+
 }
