@@ -6,6 +6,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import webprobe.enums.BrowserType;
 import webprobe.enums.RemoteBrowserType;
+import webprobe.pages.Page;
 import webprobe.pages.PageElement;
 import webprobe.seleniumDriver.GridWebDriver;
 import webprobe.seleniumDriver.LocalWebDriver;
@@ -94,28 +95,37 @@ public class WebProbe {
         return webElement;
     }
 
-    public WebElement click(By by){
+
+    public void click(By by){
         WebElement webElement = driver.findElement(by);
         webElement.click();
-        return webElement;
+    }
+
+    public void click(By locator, Integer timeout){
+        WebElement webElement = waitForElementToBeClickableBy(locator, timeout);
+        webElement.click();
     }
 
 
+    public void clickElementContainsText(List<WebElement> webElementList, String elementTextSubString, Integer timeout){
+        Assert.shouldBeTrue(webElementList != null, "*** Elements list is null!");
+        Assert.shouldBeTrue(webElementList.size() > 0, "*** Elements list is empty!");
 
-    public void clickElementContainsText(By parentLocator, String elementTextSubString){
-        Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
-
-        List<WebElement> elements = driver.findElements(parentLocator);
-        Assert.shouldBeTrue(elements.size()>0, "*** Zero elements was found!");
-
-        for (WebElement element: elements){
+        for (WebElement element: webElementList){
             if (element.getText().contains(elementTextSubString)){
-                element.click();
+                WebDriverWait wait = new WebDriverWait(driver, timeout);
+                wait.until(ExpectedConditions.elementToBeClickable(element)).click();
                 return;
             }
         }
 
         Assert.pageAssert("*** There is no element containing text: " + elementTextSubString);
+    }
+
+    public void clickElementContainsText(By parentLocator, String elementTextSubString, Integer timeout){
+        Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
+        List<WebElement> webElementList = waitForNumberOfElementsToBeMoreThan(parentLocator, 0 , timeout);
+        clickElementContainsText(webElementList, elementTextSubString, timeout);
     }
 
 
@@ -249,6 +259,11 @@ public class WebProbe {
     public void waitForNotExistingOfElementBy(By locator, Integer timeout){
         WebDriverWait wait = new WebDriverWait(driver, timeout);
         wait.until(ExpectedConditions.numberOfElementsToBe(locator, 0));
+    }
+
+    public List<WebElement> waitForNumberOfElementsToBeMoreThan(By locator, Integer number, Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        return wait.until(ExpectedConditions.numberOfElementsToBeMoreThan(locator,0));
     }
 
 

@@ -186,7 +186,16 @@ public class Page {
         pageElement.click();
     }
 
-//**************************** Ожидания  элементов ************************************************************
+    public void clickElementContainsText(By parentLocator, String subString){
+        webProbe.clickElementContainsText(parentLocator, subString, pageTimeOut);
+    }
+
+    public void clickElementContainsText(PageElement pageElement, String subString){
+        By parentLocator = assertElementLocator(pageElement);
+        webProbe.clickElementContainsText(parentLocator, subString, pageTimeOut);
+    }
+
+    //**************************** Ожидания  элементов ************************************************************
     private WebDriverWait getWait(){
         WebDriverWait wait = new WebDriverWait(webProbe.getDriver(), pageTimeOut);
         return wait;
