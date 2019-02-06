@@ -3,10 +3,9 @@
   <groupId>ru.svp.testing</groupId>
   <artifactId>webprobe</artifactId>
   <versioning>
-    <release>0.2.2</release>
     <versions>
-      <version>0.2.2</version>
+      <version>0.3-SNAPSHOT</version>
     </versions>
-    <lastUpdated>20180626124926</lastUpdated>
+    <lastUpdated>20190206142510</lastUpdated>
   </versioning>
 </metadata>
