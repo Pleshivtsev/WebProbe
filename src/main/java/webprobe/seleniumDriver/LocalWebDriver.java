@@ -36,6 +36,7 @@ public class LocalWebDriver {
     private void chromeHeadlessLaunch(){
         ChromeOptions options = new ChromeOptions();
         options.setHeadless(true);
+        options.addArguments("window-size=1920,925");
         driver = new ChromeDriver(options);
     }
 

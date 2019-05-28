@@ -97,9 +97,10 @@ public class PageBlock {
         doVerify = false;
     }
 
-    public void verify(){
+    public String verify(){
+        resultMessage = "";
         if (doVerify && elements.size() > 0){
-            resultMessage = name + " check results: " + "\r\n";
+            //resultMessage = name + " check results: " + "\r\n";
             verifyResult = true;
 
             for(PageElement element: elements){
@@ -110,6 +111,10 @@ public class PageBlock {
                 }
             }
         }
+        if (!resultMessage.equals("")){
+            resultMessage = name + " check results: " + "\r\n" + resultMessage;
+        }
+        return resultMessage;
     }
 
 //**************************** Клики   *******************************************************************************

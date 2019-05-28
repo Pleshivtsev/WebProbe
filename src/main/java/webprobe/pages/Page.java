@@ -86,7 +86,7 @@ public class Page {
 
 //**************************** Проверки   *******************************************************************************
 
-    private void checkForErrorStrings(){
+    public void checkForErrorStrings(){
         String bodyText;        // Текст страницы
         String errorMessage;    // Генерируемая строка с текстом ошибки для Assert
         List<String> existingErrorStrings = new ArrayList<String>();       // Массив строк-триггеров которые найдены на странице
@@ -125,9 +125,10 @@ public class Page {
     }
 
 
-    public void verify(){
+    public String verify(){
 
-        String resultMessage =  getName() + " page check result:" + "\r\n";
+        //String resultMessage =  getName() + " page check result:" + "\r\n";
+        String resultMessage =  "";
         Boolean verifyResult = true;
 
         checkForErrorStrings();
@@ -152,6 +153,10 @@ public class Page {
 
         webProbe.setImplicitlyWait(pageTimeOut);
 
+        if (!resultMessage.equals("")){
+            resultMessage = getName() + " page check result:" + "\r\n" + resultMessage;
+        }
+        return resultMessage;
     }
 
     private By assertElementLocator(PageElement pageElement){

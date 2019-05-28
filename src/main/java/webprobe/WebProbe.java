@@ -22,9 +22,14 @@ import java.util.concurrent.TimeUnit;
 public class WebProbe {
     private WebDriver driver;           // Selenium WebDriver
     private Long currentThread;         // Текущий поток (для отладки)
+    private String name;                // Наименование экземпляра
     private String originalWindow;      // Идентификатор начального окна браузера
     private Boolean busy;               // Флаг - экземпляр занят.
     private long implWaitDefault;       // Неявная задержка по умолчанию
+
+    private String currentTestName;
+    private String currentStepName;
+    private String log;
 
 //**************************** Конструкторы   *******************************************************************************
     public WebProbe(WebDriver driver){
@@ -79,7 +84,40 @@ public class WebProbe {
         return originalWindow;
     }
 
-//**************************** Трансляторы функций Selenium ************************************************************
+    public String getName() {
+        return name;
+    }
+
+    public String getCurrentTestName() {
+        return currentTestName;
+    }
+
+    public String getCurrentStepName() {
+        return currentStepName;
+    }
+
+    public String getLog() {
+        return log;
+    }
+
+    //**************************** Сеттеры   *******************************************************************************
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setCurrentTestName(String currentTestName) {
+        this.currentTestName = currentTestName;
+    }
+
+    public void setCurrentStepName(String currentStepName) {
+        this.currentStepName = currentStepName;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
+
+    //**************************** Трансляторы функций Selenium ************************************************************
     public void stop(){
         driver.quit();
     }
@@ -122,10 +160,33 @@ public class WebProbe {
         Assert.pageAssert("*** There is no element containing text: " + elementTextSubString);
     }
 
+
     public void clickElementContainsText(By parentLocator, String elementTextSubString, Integer timeout){
         Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
         List<WebElement> webElementList = waitForNumberOfElementsToBeMoreThan(parentLocator, 0 , timeout);
         clickElementContainsText(webElementList, elementTextSubString, timeout);
+    }
+
+
+    public WebElement getWebElementContainsText(List<WebElement> webElementList, String elementTextSubString){
+        Assert.shouldBeTrue(webElementList != null, "*** Elements list is null!");
+        Assert.shouldBeTrue(webElementList.size() > 0, "*** Elements list is empty!");
+
+        for (WebElement element: webElementList){
+            if (element.getText().contains(elementTextSubString)){
+                return element;
+            }
+        }
+
+        Assert.pageAssert("*** There is no element containing text: " + elementTextSubString);
+
+        return null;
+    }
+
+    public WebElement getWebElementContainsText(By parentLocator, String elementTextSubString, Integer timeout){
+        Assert.shouldBeTrue((elementTextSubString != null) && (elementTextSubString.trim().length()>0), "*** Element text substring null or empty!");
+        List<WebElement> webElementList = waitForNumberOfElementsToBeMoreThan(parentLocator, 0 , timeout);
+        return getWebElementContainsText(webElementList, elementTextSubString);
     }
 
 
@@ -245,6 +306,12 @@ public class WebProbe {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
+    public WebElement waitForElementToBeClickable(WebElement webElement, Integer timeout){
+        WebDriverWait wait = new WebDriverWait(driver, timeout);
+        return wait.until(ExpectedConditions.elementToBeClickable(webElement));
+    }
+
+
     public void waitForTextOfElementChanged(PageElement pageElement, String oldText, Integer timeout){
         fillWebElement(pageElement);
         WebDriverWait wait = new WebDriverWait(driver,timeout);
@@ -273,6 +340,16 @@ public class WebProbe {
         WebElement webElement = pageElement.fillWebElement(driver);
         ((JavascriptExecutor) driver).executeScript
                 ("arguments[0].removeAttribute('readonly','readonly')",webElement);
+    }
+
+    public void scrollToElement(WebElement webElement){
+        JavascriptExecutor jse = (JavascriptExecutor)getDriver();
+        jse.executeScript("arguments[0].scrollIntoView(true);",webElement);
+    }
+
+    public void scroll(Integer pixels){
+        JavascriptExecutor jse = (JavascriptExecutor)getDriver();
+        jse.executeScript("scroll(0,"+ pixels.toString() +");");
     }
 
 }// end of class WebProbe
