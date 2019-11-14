@@ -29,7 +29,7 @@ public class WebProbesPool {
     }
 
 //***********************************************************************************************************
-    public WebProbe addWebProbeToPool(BrowserType browserType, String webProbeName){
+    synchronized public WebProbe addWebProbeToPool(BrowserType browserType, String webProbeName){
         WebProbe webProbe = new WebProbe(browserType);
         webProbe.setName(webProbeName);
         webProbe.capture();
@@ -37,7 +37,7 @@ public class WebProbesPool {
         return webProbe;
     }
 
-    public WebProbe addWebProbeToPool(String gridUrl, RemoteBrowserType remoteBrowserType, String webProbeName){
+    synchronized public WebProbe addWebProbeToPool(String gridUrl, RemoteBrowserType remoteBrowserType, String webProbeName){
         WebProbe webProbe = new WebProbe(gridUrl, remoteBrowserType);
         webProbe.setName(webProbeName);
         webProbe.capture();
@@ -45,7 +45,7 @@ public class WebProbesPool {
         return webProbe;
     }
 
-    public WebProbe getWebProbeByName(String webProbeName){
+    synchronized public WebProbe getWebProbeByName(String webProbeName){
         for (WebProbe webProbe: webProbes){
             if (webProbe.getName().equals(webProbeName)){
                 return webProbe;
@@ -55,7 +55,7 @@ public class WebProbesPool {
         return null;
     }
 
-    public void quitByName(String webProbeName){
+    synchronized public void quitByName(String webProbeName){
         for (WebProbe webProbe: webProbes){
             if (webProbe.getName().equals(webProbeName)){
                 webProbe.stop();
@@ -66,11 +66,11 @@ public class WebProbesPool {
         Assert.pageAssert("*** Can't stop WebProbe " + webProbeName);
     }
 
-    public List<WebProbe> getWebProbes(){
+    synchronized public List<WebProbe> getWebProbes(){
         return webProbes;
     }
 
-    public void quitAll(){
+    synchronized public void quitAll(){
         webProbes.forEach(webProbe -> webProbe.stop());
         webProbes.clear();
     }
